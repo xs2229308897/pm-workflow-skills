@@ -220,11 +220,37 @@ Agent({
 1. 用户指出问题 → 领导者理解问题本质
 2. **判断教训类型**：
    - **通用教训**（适用于所有项目）→ 提示用户：`这条经验适用于所有项目，是否同步到全局教训库？`
-     - 用户同意 → 更新 `lessons/global-lessons.md`
+     - 用户同意 → 更新 `.claude/skills/pm-leader/lessons/global-lessons.md`，然后**自动提交并推送到共享库 GitHub 仓库**（见下方"全局教训同步流程"）
      - 用户拒绝 → 仅更新本地教训文件
    - **项目特有教训** → 直接更新本地 `docs/superpowers/pm-lessons-learned.md`
 3. 下次调用子 Agent 时，将全局 + 本地教训合并注入 prompt
 4. 经验教训跨会话持久化
+
+### 全局教训同步流程
+
+当用户同意将教训同步到全局时，领导者按以下步骤自动执行：
+
+1. 更新 `.claude/skills/pm-leader/lessons/global-lessons.md`（写入新教训）
+2. 检查该文件是否在 git 仓库中：
+   - **在仓库中**（符号链接或直接 clone 安装）→ 直接执行步骤 3
+   - **不在仓库中**（复制安装）→ 提示用户：
+     ```
+     全局教训已写入本地，但需要同步到 GitHub 共享库才能生效于其他项目。
+     请提供 pm-workflow-skills 仓库的本地路径（即你 clone 时的目录）：
+     ```
+     用户提供路径后，将更新后的文件复制到该仓库对应位置
+3. 在共享库仓库目录中执行：
+   ```bash
+   cd <共享库仓库路径>
+   git add lessons/global-lessons.md
+   git commit -m "learn: 新增全局教训 — <教训摘要>"
+   git push origin master
+   ```
+4. 向用户确认：`全局教训已同步到 GitHub，其他项目下次安装或 pull 后即可生效。`
+
+**失败处理：**
+- push 失败（网络问题/权限问题）→ 提示用户手动 push，保留本地修改
+- 用户未提供仓库路径 → 记录待同步，下次启动时提醒
 
 ### 判断标准
 
