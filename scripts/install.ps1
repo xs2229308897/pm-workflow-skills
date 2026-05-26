@@ -47,6 +47,37 @@ if (-not (Test-Path ".claude\skills\pm-leader\lessons\global-lessons.md")) {
 }
 
 Write-Host ""
+Write-Host "Copying hooks scripts..." -ForegroundColor Green
+New-Item -ItemType Directory -Force -Path ".claude\skills\pm-leader\scripts\hooks" | Out-Null
+if (Test-Path "$skillDir\scripts\hooks") {
+    Copy-Item "$skillDir\scripts\hooks\*" -Destination ".claude\skills\pm-leader\scripts\hooks\" -Force
+    Write-Host "  Installed hooks scripts" -ForegroundColor Green
+} else {
+    Write-Host "  Skip hooks (source not found)" -ForegroundColor Yellow
+}
+
+Write-Host ""
+Write-Host "Copying MCP config example..." -ForegroundColor Green
+if (-not (Test-Path "mcp-config.example.json")) {
+    Copy-Item "$skillDir\mcp-config.example.json" -Destination "."
+    Write-Host "  Created mcp-config.example.json" -ForegroundColor Green
+} else {
+    Write-Host "  Skip mcp-config.example.json (already exists)" -ForegroundColor Yellow
+}
+
+Write-Host ""
+Write-Host "Copying PM tools..." -ForegroundColor Green
+if (-not (Test-Path "tools\pm-mcp-server")) {
+    Copy-Item "$skillDir\tools" -Destination "tools" -Recurse
+    Write-Host "  Installed tools directory" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "To build PM MCP tools, run:" -ForegroundColor Yellow
+    Write-Host "  cd tools\pm-mcp-server; npm install; npm run build" -ForegroundColor Yellow
+} else {
+    Write-Host "  Skip tools (already exists)" -ForegroundColor Yellow
+}
+
+Write-Host ""
 Write-Host "Creating docs directory..." -ForegroundColor Green
 New-Item -ItemType Directory -Force -Path "docs\superpowers\pm-output" | Out-Null
 

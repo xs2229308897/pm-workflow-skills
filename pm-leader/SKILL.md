@@ -25,6 +25,24 @@ PM 工作流的唯一入口。用户只需与领导者对话，领导者自动�
    - 读取 `docs/superpowers/pm-lessons-learned.md` — 本地教训（项目特有）
    - 合并为一份完整教训列表，注入后续子 Agent prompt
 5. 向用户展示当前状态，询问下一步操作
+6. **检查可用 MCP 工具**：
+   - 如果当前会话有增强 MCP 工具（web-search、figma、database），在启动信息中告知用户
+   - 如果有 pm-workflow-tools，额外告知可用的自定义工具
+
+## Hooks 自动化（可选）
+
+如果用户已配置 Claude Code Hooks，领导者可利用以下自动化能力：
+
+| Hook 事件 | 用途 | 脚本 |
+|-----------|------|------|
+| SubagentStart | 自动记录子 Agent 调度日志 | scripts/hooks/log-subagent-start.sh |
+| SubagentStop | 自动记录子 Agent 完成状态 | scripts/hooks/log-subagent-stop.sh |
+| Stop | 会话结束时自动保存进度 | scripts/hooks/save-on-stop.sh |
+| PreToolUse (Agent) | 校验 Agent 调用格式 | scripts/hooks/validate-agent-call.sh |
+
+日志输出位置：`docs/superpowers/pm-audit.log`
+
+**注意：** Hooks 是可选增强，不配置时所有功能正常运行。
 
 ## 全局教训同步
 
@@ -100,6 +118,30 @@ curl -fsSL https://raw.githubusercontent.com/xs2229308897/pm-workflow-skills/mas
 - 自动创建
 - 提示用户：`已创建产出目录 docs/superpowers/pm-output/`
 
+### 检查 5：Claude Code Hooks 是否已配置（可选）
+
+检查 `.claude/settings.json`（或 `.claude/settings.local.json`）是否包含 PM hooks 配置（`SubagentStart`、`SubagentStop` 等事件）。
+
+**如果未配置：**
+
+向用户展示：
+
+```
+检测到 Claude Code Hooks 尚未配置。Hooks 可提供：
+  - 自动记录子 Agent 调度日志（pm-audit.log）
+  - 会话结束时自动保存进度
+  - Agent 调用格式校验
+
+是否配置？(y/N)
+```
+
+用户同意后：
+- 读取 `.claude/skills/pm-leader/hooks-config.example.json` 的内容
+- 合并到项目的 `.claude/settings.json`（不覆盖已有配置）
+- 向用户确认：`Hooks 配置已写入 .claude/settings.json`
+
+用户拒绝：跳过，不影响正常使用。
+
 ### 检查完成后
 
 所有检查通过后，向用户展示：
@@ -133,6 +175,7 @@ curl -fsSL https://raw.githubusercontent.com/xs2229308897/pm-workflow-skills/mas
 | "做原型" / "开发 demo" / "生成代码" | 原型开发 | 调用原型开发 Agent |
 | "测试" / "验证" / "跑一下" | 测试验证 | 调用测试验证 Agent |
 | "用户反馈" / "新版本" / "迭代" | 反馈收集 | 调用反馈收集 Agent |
+| "方案对比" / "对比一下" / "有没有其他方案" / "换个思路" | 方案对比 | 识别当前阶段，分叉执行多个方案 |
 | 不确定 | 主动询问 | 展示当前状态，让用户选择 |
 
 ## 并行执行规则
@@ -140,6 +183,7 @@ curl -fsSL https://raw.githubusercontent.com/xs2229308897/pm-workflow-skills/mas
 **可并行的组合**：
 - 需求分析 ∥ 竞品分析（无依赖，可同时执行）
 - 风险评估 ∥ 数据建模（都依赖 PRD，但彼此无依赖）
+- 方案对比模式下的分叉 Agent（互不依赖，必须并行）
 
 **必须串行的组合**：
 - 需求分析/竞品分析 → PRD 生成
@@ -180,6 +224,52 @@ curl -fsSL https://raw.githubusercontent.com/xs2229308897/pm-workflow-skills/mas
 | 原型开发 | 技术约束 | → 风险评估 + PRD 生成调整 |
 | 原型开发 | 代码完成 | → 测试验证（独立执行） |
 | 反馈收集 | 新版本需求 | → 需求分析（新一轮迭代） |
+
+## 方案对比模式（Session Fork）
+
+当用户需要探索多种方案时，领导者启动方案对比模式。
+
+### 触发条件
+- 用户明确要求："方案对比"、"对比一下"、"有没有其他方案"、"换个思路试试"
+- 领导者在某个阶段发现多种可行路径，主动建议对比
+
+### 支持对比的阶段
+
+| 阶段 | 对比维度 | 典型场景 |
+|------|---------|---------|
+| PRD 生成 | 架构方案 | 单体 vs 微服务、同步 vs 异步 |
+| 数据建模 | Schema 设计 | 宽表 vs 窄表、关系型 vs 文档型 |
+| 原型开发 | UI 方案 | 左右布局 vs 上下布局、表单 vs 向导 |
+
+### 执行流程
+
+1. **识别对比维度**：根据当前阶段和用户意图，确定要对比的 2-3 个方案
+2. **并行分叉**：为每个方案创建独立的 Agent 调用，prompt 中明确指定该方案的方向
+3. **收集结果**：等待所有方案的 Agent 返回
+4. **生成对比表**：
+
+   | 维度 | 方案 A | 方案 B | 方案 C |
+   |------|--------|--------|--------|
+   | 核心思路 | ... | ... | ... |
+   | 优势 | ... | ... | ... |
+   | 劣势 | ... | ... | ... |
+   | 复杂度 | 高/中/低 | ... | ... |
+   | 适用场景 | ... | ... | ... |
+   | 领导者建议 | ✓ 推荐 | | |
+
+5. **用户决策**：展示对比表，等待用户选择
+6. **继续执行**：用户选定后，以选定方案为基准继续后续流程
+
+### 分叉规则
+- 每个分叉获得独立的 Agent 调用，prompt 中注入该方案的方向约束
+- 分叉之间互不干扰，不共享中间状态
+- 对比表由领导者生成（不交给子 Agent）
+- 最多同时分叉 3 个方案
+
+### 与产出文件的关系
+- 各方案的产出分别保存为：`方案A-prd.md`、`方案B-prd.md`
+- 用户选定后，将选定方案重命名为正式文件名（如 `prd.md`）
+- 未选方案保留在 `docs/superpowers/pm-output/{版本}/alternatives/` 子目录
 
 ## 产出文件管理
 

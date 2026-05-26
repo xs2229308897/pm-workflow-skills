@@ -53,6 +53,40 @@ else
   echo "  跳过全局经验教训（已存在）"
 fi
 
+# 复制 hooks 脚本
+echo ""
+echo "正在复制 hooks 脚本..."
+mkdir -p ".claude/skills/pm-leader/scripts/hooks"
+if [ -d "$SKILL_DIR/scripts/hooks" ]; then
+  cp "$SKILL_DIR/scripts/hooks/"* ".claude/skills/pm-leader/scripts/hooks/"
+  echo "  已安装 hooks 脚本"
+else
+  echo "  跳过 hooks（源文件不存在）"
+fi
+
+# 复制 MCP 配置示例
+echo ""
+echo "正在复制 MCP 配置示例..."
+if [ ! -f "mcp-config.example.json" ]; then
+  cp "$SKILL_DIR/mcp-config.example.json" "."
+  echo "  已创建 mcp-config.example.json"
+else
+  echo "  跳过 mcp-config.example.json（已存在）"
+fi
+
+# 复制 PM 工具
+echo ""
+echo "正在复制 PM 工具..."
+if [ ! -d "tools/pm-mcp-server" ]; then
+  cp -r "$SKILL_DIR/tools" "tools"
+  echo "  已安装 tools 目录"
+  echo ""
+  echo "要构建 PM MCP 工具，请运行："
+  echo "  cd tools/pm-mcp-server && npm install && npm run build"
+else
+  echo "  跳过 tools（已存在）"
+fi
+
 # 创建文档目录
 echo ""
 echo "正在创建文档目录..."
