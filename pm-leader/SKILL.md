@@ -17,9 +17,87 @@ PM 工作流的唯一入口。用户只需与领导者对话，领导者自动�
 
 ## 启动流程
 
-1. 读取 `docs/superpowers/pm-workflow-state.md` 获取当前工作流状态
-2. 读取 `docs/superpowers/pm-lessons-learned.md` 获取经验教训
-3. 向用户展示当前状态，询问下一步操作
+1. **首次启动检查**（见下方"首次启动检查"章节）
+2. 读取 `docs/superpowers/pm-workflow-state.md` 获取当前工作流状态
+3. 读取 `docs/superpowers/pm-lessons-learned.md` 获取经验教训
+4. 向用户展示当前状态，询问下一步操作
+
+## 首次启动检查
+
+每次启动时，按以下顺序检查环境。如有问题，**逐项提示用户**，不要一次性列出所有问题。
+
+### 检查 1：原型开发模板是否已配置
+
+读取 `.claude/skills/pm-prototype-builder/SKILL.md`，检查是否包含 `STATUS: UNCONFIGURED` 标记。
+
+**如果未配置（标记存在）：**
+
+向用户展示：
+
+```
+检测到原型开发模板尚未配置。
+
+你的项目使用哪种前端技术栈？
+
+  1. Vue 3 + Ant Design Vue + Pinia（推荐，适合中后台系统）
+  2. React + Ant Design + Zustand
+  3. Vue 3 + Element Plus + Pinia
+  4. Vue 3 + Naive UI + Pinia
+  5. 其他 / 暂不配置
+
+选择后，我会自动将对应模板写入 pm-prototype-builder 的配置中。
+即使不配置，除原型开发外的其他 7 个子 Agent 仍可正常使用。
+```
+
+用户选择后：
+- 读取 `pm-prototype-builder/templates/{对应文件}.md` 的内容
+- 替换 `pm-prototype-builder/SKILL.md` 中从 `<!-- STATUS: UNCONFIGURED -->` 到项目规范章节结束的内容
+- 删除 `STATUS: UNCONFIGURED` 标记行
+- 向用户确认配置完成
+
+### 检查 2：工作流状态文件是否存在
+
+检查 `docs/superpowers/pm-workflow-state.md` 是否存在。
+
+**如果不存在：**
+- 自动创建（从模板复制）
+- 提示用户：`已创建工作流状态文件 docs/superpowers/pm-workflow-state.md`
+
+### 检查 3：经验教训文件是否存在
+
+检查 `docs/superpowers/pm-lessons-learned.md` 是否存在。
+
+**如果不存在：**
+- 自动创建（从模板复制）
+- 提示用户：`已创建经验教训文件 docs/superpowers/pm-lessons-learned.md`
+
+### 检查 4：产出目录是否存在
+
+检查 `docs/superpowers/pm-output/` 目录是否存在。
+
+**如果不存在：**
+- 自动创建
+- 提示用户：`已创建产出目录 docs/superpowers/pm-output/`
+
+### 检查完成后
+
+所有检查通过后，向用户展示：
+
+```
+环境检查完成，PM 工作流已就绪。
+
+当前状态：
+- 原型开发模板：已配置（{技术栈名称}）
+- 工作流状态：{当前阶段}
+- 产出目录：{产出数量} 个版本
+
+你可以：
+  - 粘贴需求文本，我来帮你整理
+  - 输入"写 PRD" / "做原型" / "测试" 等指令
+  - 输入"查看状态"查看当前工作流详情
+```
+
+**注意：** 检查 1 只在标记存在时触发。检查 2-4 在每次启动时执行，但只在文件缺失时提示用户（不重复提示已存在的文件）。
 
 ## 意图识别
 
