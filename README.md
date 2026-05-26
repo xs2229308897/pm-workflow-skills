@@ -153,6 +153,46 @@ Get-ChildItem "PM_WORKFLOW_SKILLS" -Directory -Filter "pm-*" | ForEach-Object {
 - **通用教训**（如"PRD 计算逻辑必须有公式"）→ 提示是否同步到全局
 - **本地教训**（如"本项目审批是三级"）→ 仅写入项目本地文件
 
+### Hooks 配置（可选）
+
+PM 工作流支持 Claude Code Hooks 自动化：
+
+| Hook 事件 | 用途 |
+|-----------|------|
+| SubagentStart | 自动记录子 Agent 调度日志 |
+| SubagentStop | 自动记录子 Agent 完成状态 |
+| Stop | 会话结束时自动保存进度 |
+| PreToolUse (Agent) | 校验 Agent 调用格式 |
+
+配置方式：将 `hooks-config.example.json` 的内容合并到项目的 `.claude/settings.json`。
+
+### MCP 工具配置（可选）
+
+PM 工作流支持通过 MCP 协议集成外部工具：
+
+| MCP 工具 | 增强的子 Agent | 用途 |
+|----------|---------------|------|
+| web-search (Brave) | 竞品分析 | 搜索竞品信息 |
+| Figma | PRD、原型开发 | 获取设计稿规范 |
+| pm-workflow-tools | 需求分析、PRD、数据建模 | 自动质量检查 |
+
+配置方式：
+1. 复制 `mcp-config.example.json` 到项目根目录
+2. 填入 API key / token
+3. 如果需要 pm-workflow-tools，先执行 `cd tools/pm-mcp-server && npm install && npm run build`
+
+### 自定义 PM 工具
+
+`tools/pm-mcp-server/` 提供 3 个 PM 专用 MCP 工具：
+
+| 工具 | 用途 |
+|------|------|
+| `assess_requirement_quality` | 评估需求清单质量（0-100 分） |
+| `check_prd_consistency` | 检查 PRD 内部一致性 |
+| `generate_er_diagram` | 从数据模型生成 Mermaid ER 图 |
+
+这些工具使用纯启发式分析（正则 + 结构检测），无 LLM 调用，快速且无额外成本。
+
 ## 使用
 
 ```
