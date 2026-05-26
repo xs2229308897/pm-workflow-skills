@@ -25,93 +25,45 @@ Claude Code 多 Agent 技能，覆盖产品经理全流程：需求分析 → PR
 
 ## 安装
 
-### macOS / Linux
+**前置条件：** 在你的项目根目录下运行以下命令。
 
-#### 方式一：复制到项目（推荐）
+### 一键安装（推荐）
+
+**macOS / Linux：**
 
 ```bash
-# 克隆仓库
+cd /your/project && bash <(curl -sL https://raw.githubusercontent.com/xs2229308897/pm-workflow-skills/main/scripts/install-remote.sh)
+```
+
+**Windows PowerShell：**
+
+```powershell
+cd YOUR_PROJECT; irm https://raw.githubusercontent.com/xs2229308897/pm-workflow-skills/main/scripts/install-remote.ps1 | iex
+```
+
+### 其他安装方式
+
+**Git 克隆 + 安装脚本：**
+
+```bash
+# macOS / Linux
 git clone https://github.com/xs2229308897/pm-workflow-skills.git /tmp/pm-workflow-skills
+cd /your/project && bash /tmp/pm-workflow-skills/scripts/install.sh
 
-# 复制技能到项目
-cp -r /tmp/pm-workflow-skills/pm-* /path/to/your-project/.claude/skills/
-
-# 复制配套模板
-mkdir -p /path/to/your-project/docs/superpowers/pm-output
-cp /tmp/pm-workflow-skills/docs/superpowers/pm-workflow-state.md /path/to/your-project/docs/superpowers/
-cp /tmp/pm-workflow-skills/docs/superpowers/pm-lessons-learned.md /path/to/your-project/docs/superpowers/
-```
-
-#### 方式二：使用安装脚本
-
-```bash
-git clone https://github.com/xs2229308897/pm-workflow-skills.git /tmp/pm-workflow-skills
-cd /path/to/your-project
-bash /tmp/pm-workflow-skills/scripts/install.sh
-```
-
-#### 方式三：符号链接（开发模式）
-
-```bash
-cd /path/to/your-project/.claude/skills
-ln -s /path/to/pm-workflow-skills/pm-* .
-```
-
-### Windows
-
-#### 方式一：复制到项目（推荐）
-
-```powershell
-# 克隆仓库
+# Windows PowerShell
 git clone https://github.com/xs2229308897/pm-workflow-skills.git $env:TEMP\pm-workflow-skills
-
-# 复制技能到项目（替换 YOUR_PROJECT 为你的项目路径）
-$skills = Get-ChildItem "$env:TEMP\pm-workflow-skills" -Directory -Filter "pm-*"
-foreach ($s in $skills) {
-    Copy-Item $s.FullName -Destination "YOUR_PROJECT\.claude\skills\$($s.Name)" -Recurse
-}
-
-# 复制配套模板
-New-Item -ItemType Directory -Force -Path "YOUR_PROJECT\docs\superpowers\pm-output"
-Copy-Item "$env:TEMP\pm-workflow-skills\docs\superpowers\pm-workflow-state.md" -Destination "YOUR_PROJECT\docs\superpowers\"
-Copy-Item "$env:TEMP\pm-workflow-skills\docs\superpowers\pm-lessons-learned.md" -Destination "YOUR_PROJECT\docs\superpowers\"
+cd YOUR_PROJECT; powershell -File "$env:TEMP\pm-workflow-skills\scripts\install.ps1"
 ```
 
-#### 方式二：使用安装脚本
-
-PowerShell（推荐）：
-
-```powershell
-git clone https://github.com/xs2229308897/pm-workflow-skills.git $env:TEMP\pm-workflow-skills
-cd YOUR_PROJECT
-powershell -File "$env:TEMP\pm-workflow-skills\scripts\install.ps1"
-```
-
-Git Bash（如果已安装 Git for Windows）：
+**符号链接（开发模式，修改即时生效）：**
 
 ```bash
-git clone https://github.com/xs2229308897/pm-workflow-skills.git /c/Users/$USER/AppData/Local/Temp/pm-workflow-skills
-cd /path/to/your-project
-bash /c/Users/$USER/AppData/Local/Temp/pm-workflow-skills/scripts/install.sh
-```
+# macOS / Linux
+cd /your/project/.claude/skills && ln -s /path/to/pm-workflow-skills/pm-* .
 
-#### 方式三：符号链接（需管理员权限）
-
-以管理员身份打开 CMD：
-
-```cmd
-:: 替换 YOUR_PROJECT 和 PM_WORKFLOW_SKILLS 为实际路径
+# Windows（管理员 CMD）
 cd YOUR_PROJECT\.claude\skills
-for /d %d in (PM_WORKFLOW_SKILLS\pm-*) do mklink /D "%~nxd" "%d"
-```
-
-或在 PowerShell（管理员）中：
-
-```powershell
-cd YOUR_PROJECT\.claude\skills
-Get-ChildItem "PM_WORKFLOW_SKILLS" -Directory -Filter "pm-*" | ForEach-Object {
-    New-Item -ItemType SymbolicLink -Path $_.Name -Target $_.FullName
-}
+for /d %d in (C:\path\to\pm-workflow-skills\pm-*) do mklink /D "%~nxd" "%d"
 ```
 
 ## 配置

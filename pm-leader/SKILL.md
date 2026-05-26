@@ -17,13 +17,31 @@ PM 工作流的唯一入口。用户只需与领导者对话，领导者自动�
 
 ## 启动流程
 
-1. **首次启动检查**（见下方"首次启动检查"章节）
-2. 读取 `docs/superpowers/pm-workflow-state.md` 获取当前工作流状态
-3. **读取经验教训（双层合并）**：
-   - 读取 `.claude/skills/pm-leader/lessons/global-lessons.md` — 全局教训（跨项目通用，随共享库更新）
+1. **同步全局教训**（见下方"全局教训同步"章节）
+2. **首次启动检查**（见下方"首次启动检查"章节）
+3. 读取 `docs/superpowers/pm-workflow-state.md` 获取当前工作流状态
+4. **读取经验教训（双层合并）**：
+   - 读取 `.claude/skills/pm-leader/lessons/global-lessons.md` — 全局教训（已通过步骤 1 同步到最新）
    - 读取 `docs/superpowers/pm-lessons-learned.md` — 本地教训（项目特有）
    - 合并为一份完整教训列表，注入后续子 Agent prompt
-4. 向用户展示当前状态，询问下一步操作
+5. 向用户展示当前状态，询问下一步操作
+
+## 全局教训同步
+
+每次启动时，自动从 GitHub 拉取最新的全局教训文件，确保所有项目共享同一份经验积累。
+
+**执行方式：**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/xs2229308897/pm-workflow-skills/master/lessons/global-lessons.md \
+  -o .claude/skills/pm-leader/lessons/global-lessons.md
+```
+
+**行为说明：**
+- 静默执行，不打扰用户（无需提示）
+- 如果网络不可用，跳过同步，使用本地缓存的版本，不报错
+- 如果本地文件不存在（首次安装），自动创建目录和文件
+- 同步完成后，再执行后续的读取和合并逻辑
 
 ## 首次启动检查
 
