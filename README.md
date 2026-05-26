@@ -31,7 +31,7 @@ Claude Code 多 Agent 技能，覆盖产品经理全流程：需求分析 → PR
 
 ```bash
 # 克隆仓库
-git clone https://github.com/YOUR_USERNAME/pm-workflow-skills.git /tmp/pm-workflow-skills
+git clone https://github.com/xs2229308897/pm-workflow-skills.git /tmp/pm-workflow-skills
 
 # 复制技能到项目
 cp -r /tmp/pm-workflow-skills/pm-* /path/to/your-project/.claude/skills/
@@ -45,7 +45,7 @@ cp /tmp/pm-workflow-skills/docs/superpowers/pm-lessons-learned.md /path/to/your-
 #### 方式二：使用安装脚本
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/pm-workflow-skills.git /tmp/pm-workflow-skills
+git clone https://github.com/xs2229308897/pm-workflow-skills.git /tmp/pm-workflow-skills
 cd /path/to/your-project
 bash /tmp/pm-workflow-skills/scripts/install.sh
 ```
@@ -63,7 +63,7 @@ ln -s /path/to/pm-workflow-skills/pm-* .
 
 ```powershell
 # 克隆仓库
-git clone https://github.com/YOUR_USERNAME/pm-workflow-skills.git $env:TEMP\pm-workflow-skills
+git clone https://github.com/xs2229308897/pm-workflow-skills.git $env:TEMP\pm-workflow-skills
 
 # 复制技能到项目（替换 YOUR_PROJECT 为你的项目路径）
 $skills = Get-ChildItem "$env:TEMP\pm-workflow-skills" -Directory -Filter "pm-*"
@@ -82,7 +82,7 @@ Copy-Item "$env:TEMP\pm-workflow-skills\docs\superpowers\pm-lessons-learned.md" 
 PowerShell（推荐）：
 
 ```powershell
-git clone https://github.com/YOUR_USERNAME/pm-workflow-skills.git $env:TEMP\pm-workflow-skills
+git clone https://github.com/xs2229308897/pm-workflow-skills.git $env:TEMP\pm-workflow-skills
 cd YOUR_PROJECT
 powershell -File "$env:TEMP\pm-workflow-skills\scripts\install.ps1"
 ```
@@ -90,7 +90,7 @@ powershell -File "$env:TEMP\pm-workflow-skills\scripts\install.ps1"
 Git Bash（如果已安装 Git for Windows）：
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/pm-workflow-skills.git /c/Users/$USER/AppData/Local/Temp/pm-workflow-skills
+git clone https://github.com/xs2229308897/pm-workflow-skills.git /c/Users/$USER/AppData/Local/Temp/pm-workflow-skills
 cd /path/to/your-project
 bash /c/Users/$USER/AppData/Local/Temp/pm-workflow-skills/scripts/install.sh
 ```
