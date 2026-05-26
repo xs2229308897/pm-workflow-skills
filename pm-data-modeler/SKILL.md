@@ -12,6 +12,11 @@ description: 生成 ER 图、数据字典、字段映射规范
 - PRD 文档中的数据模型章节（来自 PRD 生成 Agent）
 - 项目现有数据模型（从代码中提取）
 
+## MCP 工具增强
+
+- 如果数据库 MCP 工具可用，可查询现有数据库 schema 作为参考
+- 如果 pm-workflow-tools MCP 可用，使用 `generate_er_diagram` 生成 Mermaid ER 图
+
 ## 处理流程
 
 1. 提取 PRD 中的业务实体

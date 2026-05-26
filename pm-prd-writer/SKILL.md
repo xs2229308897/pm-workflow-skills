@@ -53,6 +53,11 @@ description: 根据需求清单和竞品报告生成符合项目规范的 PRD �
 - 实体间关系：一对一、一对多、多对多关系，外键说明
 - 数据流向：哪些数据从哪里来、到哪里去、如何同步
 
+## MCP 工具增强
+
+- 如果 Figma MCP 可用，PRD 中应引用 Figma 设计稿链接
+- 如果 pm-workflow-tools MCP 可用，完成 PRD 后调用 `check_prd_consistency` 自审
+
 ## 自审清单
 
 - 每个需求是否都映射到了 PRD 的某个章节？

@@ -31,6 +31,11 @@ description: 根据 PRD 和数据模型生成可运行的前端原型代码（�
 <!-- templates/vue3-naive.md    — Vue 3 + TypeScript + Naive UI + Pinia -->
 ```
 
+## MCP 工具增强
+
+- 如果 Figma MCP 可用，可从 Figma 设计稿获取 UI 规范（颜色、间距、组件样式）
+- 如果 web-search MCP 可用，可搜索组件库文档获取最佳实践
+
 ## 处理流程
 
 1. 读取项目规范，确认技术栈和目录结构
