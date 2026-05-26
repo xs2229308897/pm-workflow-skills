@@ -39,6 +39,17 @@ foreach ($dir in $skillDirs) {
     }
 }
 
+# 复制全局经验教训
+Write-Host ""
+Write-Host "正在复制全局经验教训..." -ForegroundColor Green
+New-Item -ItemType Directory -Force -Path ".claude\skills\pm-leader\lessons" | Out-Null
+if (-not (Test-Path ".claude\skills\pm-leader\lessons\global-lessons.md")) {
+    Copy-Item "$skillDir\lessons\global-lessons.md" -Destination ".claude\skills\pm-leader\lessons\"
+    Write-Host "  已创建全局经验教训文件" -ForegroundColor Green
+} else {
+    Write-Host "  跳过全局经验教训（已存在）" -ForegroundColor Yellow
+}
+
 # 创建文档目录
 Write-Host ""
 Write-Host "正在创建文档目录..." -ForegroundColor Green

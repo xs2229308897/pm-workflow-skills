@@ -42,6 +42,17 @@ for skill_dir in "$SKILL_DIR"/pm-*; do
   fi
 done
 
+# 复制全局经验教训
+echo ""
+echo "正在复制全局经验教训..."
+mkdir -p ".claude/skills/pm-leader/lessons"
+if [ ! -f ".claude/skills/pm-leader/lessons/global-lessons.md" ]; then
+  cp "$SKILL_DIR/lessons/global-lessons.md" ".claude/skills/pm-leader/lessons/"
+  echo "  已创建全局经验教训文件"
+else
+  echo "  跳过全局经验教训（已存在）"
+fi
+
 # 创建文档目录
 echo ""
 echo "正在创建文档目录..."

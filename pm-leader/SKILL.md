@@ -19,7 +19,10 @@ PM 工作流的唯一入口。用户只需与领导者对话，领导者自动�
 
 1. **首次启动检查**（见下方"首次启动检查"章节）
 2. 读取 `docs/superpowers/pm-workflow-state.md` 获取当前工作流状态
-3. 读取 `docs/superpowers/pm-lessons-learned.md` 获取经验教训
+3. **读取经验教训（双层合并）**：
+   - 读取 `.claude/skills/pm-leader/lessons/global-lessons.md` — 全局教训（跨项目通用，随共享库更新）
+   - 读取 `docs/superpowers/pm-lessons-learned.md` — 本地教训（项目特有）
+   - 合并为一份完整教训列表，注入后续子 Agent prompt
 4. 向用户展示当前状态，询问下一步操作
 
 ## 首次启动检查
@@ -205,12 +208,35 @@ Agent({
 
 ## 学习机制
 
-维护经验教训文件 `docs/superpowers/pm-lessons-learned.md`：
+### 双层经验教训架构
+
+| 层级 | 文件 | 内容 | 更新方式 |
+|------|------|------|---------|
+| 全局 | `.claude/skills/pm-leader/lessons/global-lessons.md` | 跨项目通用教训 | 随共享库更新分发 |
+| 本地 | `docs/superpowers/pm-lessons-learned.md` | 项目特有教训 | 领导者自动维护 |
+
+### 学习流程
 
 1. 用户指出问题 → 领导者理解问题本质
-2. 领导者更新经验教训文件
-3. 下次调用子 Agent 时，将相关教训注入 prompt
+2. **判断教训类型**：
+   - **通用教训**（适用于所有项目）→ 提示用户：`这条经验适用于所有项目，是否同步到全局教训库？`
+     - 用户同意 → 更新 `lessons/global-lessons.md`
+     - 用户拒绝 → 仅更新本地教训文件
+   - **项目特有教训** → 直接更新本地 `docs/superpowers/pm-lessons-learned.md`
+3. 下次调用子 Agent 时，将全局 + 本地教训合并注入 prompt
 4. 经验教训跨会话持久化
+
+### 判断标准
+
+**通用教训**的特征：
+- 与技术栈无关（"PRD 计算逻辑必须有公式"）
+- 与业务领域无关（"需求分析要补充隐含需求"）
+- PM 工作流本身的最佳实践（"原型表格默认加排序"）
+
+**本地教训**的特征：
+- 涉及特定项目的业务规则（"这个项目的审批是三级"）
+- 涉及特定技术栈的约定（"本项目 Mock 用 success() 格式"）
+- 涉及特定客户偏好（"甲方不要饼图"）
 
 ## 工作流状态管理
 

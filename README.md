@@ -140,9 +140,18 @@ Get-ChildItem "PM_WORKFLOW_SKILLS" -Directory -Filter "pm-*" | ForEach-Object {
 
 默认产出目录为 `docs/superpowers/pm-output/`。如需修改，编辑 `pm-leader/SKILL.md` 中的"产出文件管理"章节。
 
-### 配置经验教训路径
+### 经验教训（双层架构）
 
-默认路径为 `docs/superpowers/pm-lessons-learned.md`。如需修改，编辑各子 Agent 中引用此文件的位置。
+经验教训分两层管理，领导者启动时自动合并：
+
+| 层级 | 文件位置 | 内容 | 更新方式 |
+|------|----------|------|---------|
+| 全局 | `.claude/skills/pm-leader/lessons/global-lessons.md` | 跨项目通用教训 | 随共享库 pull 更新 |
+| 本地 | `docs/superpowers/pm-lessons-learned.md` | 项目特有教训 | 领导者自动维护 |
+
+当用户纠正 PM 工作流中的问题时，领导者会判断教训类型：
+- **通用教训**（如"PRD 计算逻辑必须有公式"）→ 提示是否同步到全局
+- **本地教训**（如"本项目审批是三级"）→ 仅写入项目本地文件
 
 ## 使用
 
@@ -211,7 +220,10 @@ Get-ChildItem "PM_WORKFLOW_SKILLS" -Directory -Filter "pm-*" | ForEach-Object {
 ```
 your-project/
 ├── .claude/skills/
-│   ├── pm-leader/SKILL.md
+│   ├── pm-leader/
+│   │   ├── SKILL.md
+│   │   └── lessons/
+│   │       └── global-lessons.md    # 全局经验教训（跨项目通用）
 │   ├── pm-requirement-analysis/SKILL.md
 │   ├── pm-competitive-analysis/SKILL.md
 │   ├── pm-prd-writer/SKILL.md
@@ -221,9 +233,9 @@ your-project/
 │   ├── pm-test-verifier/SKILL.md
 │   └── pm-feedback-collector/SKILL.md
 ├── docs/superpowers/
-│   ├── pm-workflow-state.md      # 工作流状态（自动维护）
-│   ├── pm-lessons-learned.md     # 经验教训（自动维护）
-│   └── pm-output/                # 产出目录
+│   ├── pm-workflow-state.md          # 工作流状态（自动维护）
+│   ├── pm-lessons-learned.md         # 本地经验教训（项目特有）
+│   └── pm-output/                    # 产出目录
 │       ├── v1.0/
 │       │   ├── requirement-list.md
 │       │   ├── competitive-analysis.md
@@ -233,7 +245,7 @@ your-project/
 │       │   └── test-report.md
 │       └── v2.0/
 │           └── ...
-└── src/                          # 你的项目源码
+└── src/                              # 你的项目源码
 ```
 
 ## License
