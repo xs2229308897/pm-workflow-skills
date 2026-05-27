@@ -22,6 +22,8 @@ Claude Code 多 Agent 技能，覆盖产品经理全流程：需求分析 → PR
 | `pm-prototype-builder` | 原型开发 — 可运行的前端原型代码 |
 | `pm-test-verifier` | 测试验证 — 测试用例、冒烟测试 |
 | `pm-feedback-collector` | 反馈收集 — 分析反馈、生成新版本需求 |
+| `pm-process-modeler` | 流程建模 — 业务流程图、状态机、审批流配置（仅 B 端模式） |
+| `pm-permission-designer` | 权限设计 — RBAC/ABAC、数据权限、多租户隔离（仅 B 端模式） |
 
 ## 安装
 
@@ -181,6 +183,25 @@ PM 工作流支持通过 MCP 协议集成外部工具：
 2. 填入 API key / token
 3. 如果需要 pm-workflow-tools，先执行 `cd tools/pm-mcp-server && npm install && npm run build`
 
+### B 端增强模式（可选）
+
+PM 工作流支持 B 端产品管理增强。默认关闭，首次启动 `/pm-leader` 时会询问是否开启。
+
+开启后激活的能力：
+
+| 能力 | 说明 |
+|------|------|
+| PRD B 端章节 | 多租户架构、权限矩阵、系统集成、部署方案 |
+| B 端数据模式 | 多租户隔离、审计字段、数据权限、通用实体模板 |
+| B 端输入适配 | RFP、流程图、组织架构、合规文档 |
+| B 端风险维度 | 合规、数据迁移、集成、定制化、上线割接 |
+| B 端测试场景 | 多租户隔离、权限边界、审批流、批量性能 |
+| 流程建模 Agent | 业务流程图、状态机、审批流配置表 |
+| 权限设计 Agent | RBAC/ABAC、数据权限、多租户隔离策略 |
+
+模式状态存储在 `docs/superpowers/pm-workflow-state.md` 的 `B 端模式` 字段中。
+用户可随时说"开启/关闭 B 端模式"来切换。
+
 ### 自定义 PM 工具
 
 `tools/pm-mcp-server/` 提供 3 个 PM 专用 MCP 工具：
@@ -271,7 +292,9 @@ your-project/
 │   ├── pm-data-modeler/SKILL.md
 │   ├── pm-prototype-builder/SKILL.md
 │   ├── pm-test-verifier/SKILL.md
-│   └── pm-feedback-collector/SKILL.md
+│   ├── pm-feedback-collector/SKILL.md
+│   ├── pm-process-modeler/SKILL.md
+│   └── pm-permission-designer/SKILL.md
 ├── docs/superpowers/
 │   ├── pm-workflow-state.md          # 工作流状态（自动维护）
 │   ├── pm-lessons-learned.md         # 本地经验教训（项目特有）

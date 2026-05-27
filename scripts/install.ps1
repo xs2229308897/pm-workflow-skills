@@ -37,6 +37,10 @@ foreach ($dir in $skillDirs) {
 }
 
 Write-Host ""
+Write-Host "B-mode skills (pm-process-modeler, pm-permission-designer) are included above." -ForegroundColor Green
+Write-Host "  These skills are only active when B-mode is enabled in pm-leader." -ForegroundColor Gray
+
+Write-Host ""
 Write-Host "Copying global lessons..." -ForegroundColor Green
 New-Item -ItemType Directory -Force -Path ".claude\skills\pm-leader\lessons" | Out-Null
 if (-not (Test-Path ".claude\skills\pm-leader\lessons\global-lessons.md")) {

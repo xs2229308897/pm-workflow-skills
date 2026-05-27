@@ -42,6 +42,10 @@ for skill_dir in "$SKILL_DIR"/pm-*; do
   fi
 done
 
+echo ""
+echo "B 端增强 Skill（pm-process-modeler、pm-permission-designer）已包含在上方安装中。"
+echo "  这些 Skill 仅在 pm-leader 中开启 B 端模式后生效。"
+
 # 复制全局经验教训
 echo ""
 echo "正在复制全局经验教训..."
