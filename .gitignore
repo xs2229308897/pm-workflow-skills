@@ -1,0 +1,10 @@
+# Brainstorming session artifacts
+.superpowers/
+
+# Node.js
+node_modules/
+dist/
+
+# OS files
+.DS_Store
+Thumbs.db
