@@ -4,9 +4,12 @@ Claude Code 多 Agent 技能，覆盖产品经理全流程：需求分析 → PR
 
 ## 核心特性
 
-- **单一入口** — 通过 `/pm-leader` 与一个领导者对话，自动调度 8 个子 Agent
+- **单一入口** — 通过 `/pm-leader` 与一个领导者对话，自动调度 9 个子 Agent（B 端模式 +2）
 - **动态反馈循环** — 子 Agent 之间可互相补充、迭代，非线性流水线
-- **学习机制** — 从用户纠正中学习，经验跨会话持久化
+- **产出验证** — 子 Agent 完成后 leader 自动验证产出质量，不仅依赖状态码
+- **学习机制** — 从用户纠正中学习，自动去重，经验跨会话持久化
+- **会话恢复** — 会话中断后自动保存进度，下次启动可继续
+- **版本对比** — 支持查看不同版本间的差异
 - **技术栈无关** — 原型开发支持多种前端框架模板，按项目配置
 
 ## 包含的 Skills
@@ -16,11 +19,12 @@ Claude Code 多 Agent 技能，覆盖产品经理全流程：需求分析 → PR
 | `pm-leader` | 领导者 — 意图识别、任务调度、成果汇总、学习更新 |
 | `pm-requirement-analysis` | 需求分析 — 从非结构化文本提取结构化需求 |
 | `pm-competitive-analysis` | 竞品分析 — 同类系统功能对比 |
-| `pm-prd-writer` | PRD 生成 — 完整 PRD 文档（含功能逻辑说明、数据模型） |
+| `pm-prd-writer` | PRD 生成 — 完整 PRD 文档（含功能逻辑说明、数据模型概要） |
+| `pm-architecture-designer` | 架构设计 — 系统架构、API 规范、技术选型、部署方案 |
 | `pm-risk-assessor` | 风险评估 — 可行性、复杂度、跨模块影响 |
-| `pm-data-modeler` | 数据建模 — ER 图、数据字典 |
+| `pm-data-modeler` | 数据建模 — ER 图、数据字典（从 PRD 概要详细展开） |
 | `pm-prototype-builder` | 原型开发 — 可运行的前端原型代码 |
-| `pm-test-verifier` | 测试验证 — 测试用例、冒烟测试 |
+| `pm-test-verifier` | 测试验证 — 测试用例、冒烟测试、自动化脚本 |
 | `pm-feedback-collector` | 反馈收集 — 分析反馈、生成新版本需求 |
 | `pm-process-modeler` | 流程建模 — 业务流程图、状态机、审批流配置（仅 B 端模式） |
 | `pm-permission-designer` | 权限设计 — RBAC/ABAC、数据权限、多租户隔离（仅 B 端模式） |
@@ -186,8 +190,10 @@ PM 工作流支持 B 端产品管理增强。默认关闭，首次启动 `/pm-le
 | 能力 | 说明 |
 |------|------|
 | PRD B 端章节 | 多租户架构、权限矩阵、系统集成、部署方案 |
+| 架构设计 B 端增强 | 多租户架构方案、SSO/LDAP 集成、API 网关、数据安全 |
 | B 端数据模式 | 多租户隔离、审计字段、数据权限、通用实体模板 |
 | B 端输入适配 | RFP、流程图、组织架构、合规文档 |
+| B 端竞品维度 | 供应商对比、TCO 分析、合规认证、部署模式、集成生态 |
 | B 端风险维度 | 合规、数据迁移、集成、定制化、上线割接 |
 | B 端测试场景 | 多租户隔离、权限边界、审批流、批量性能 |
 | 流程建模 Agent | 业务流程图、状态机、审批流配置表 |
@@ -237,17 +243,21 @@ PM 工作流支持 B 端产品管理增强。默认关闭，首次启动 `/pm-le
 用户 ←→ PM 领导者
            ├── 需求分析 ∥ 竞品分析（并行）
            ├── PRD 生成
-           ├── 风险评估 ∥ 数据建模（并行）
+           ├── 架构设计
+           ├── [流程建模]（仅 B 端模式）
+           ├── 风险评估 ∥ 数据建模 ∥ [权限设计]（并行）
            ├── 原型开发
-           ├── 测试验证（独立执行）
+           ├── 测试验证（含自动化脚本）
            └── 反馈收集 → 回到需求分析（新一轮迭代）
 ```
 
 子 Agent 之间通过领导者传递信息，支持动态反馈循环：
 
+- 架构设计发现非功能性需求不明确 → 领导者调度 PRD 生成补充
 - PRD 生成发现数据模型不完整 → 领导者调度数据建模补充
 - 风险评估发现高风险需求 → 领导者调度 PRD 生成标注风险
 - 反馈收集产出新版本需求 → 领导者调度需求分析开始新一轮
+- 反馈收集发现 Bug → 领导者调度测试验证生成回归用例
 
 ## 自定义
 
@@ -255,7 +265,12 @@ PM 工作流支持 B 端产品管理增强。默认关闭，首次启动 `/pm-le
 
 1. 创建目录 `.claude/skills/pm-{name}/`
 2. 创建 `SKILL.md`，遵循现有子 Agent 的格式（输入、处理流程、输出格式、自审清单、汇报格式）
-3. 在 `pm-leader/SKILL.md` 的意图识别表和并行执行规则中注册新 Agent
+3. 在 `pm-leader/SKILL.md` 中注册新 Agent：
+   - 意图识别表：添加用户输入特征 → 执行动作映射
+   - 并行执行规则：定义与其他 Agent 的并行/串行关系
+   - 默认执行顺序：插入到流水线的正确位置
+   - 反馈循环规则：定义与其他 Agent 的反馈路由
+   - 产出文件管理：添加产出文件名
 
 ### 修改汇报格式
 
@@ -282,6 +297,7 @@ your-project/
 │   ├── pm-requirement-analysis/SKILL.md
 │   ├── pm-competitive-analysis/SKILL.md
 │   ├── pm-prd-writer/SKILL.md
+│   ├── pm-architecture-designer/SKILL.md
 │   ├── pm-risk-assessor/SKILL.md
 │   ├── pm-data-modeler/SKILL.md
 │   ├── pm-prototype-builder/SKILL.md
@@ -297,6 +313,7 @@ your-project/
 │       │   ├── requirement-list.md
 │       │   ├── competitive-analysis.md
 │       │   ├── prd.md
+│       │   ├── architecture-design.md
 │       │   ├── risk-assessment.md
 │       │   ├── data-model.md
 │       │   └── test-report.md
