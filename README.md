@@ -61,40 +61,35 @@ ln -s /path/to/pm-workflow-skills/pm-* .
 
 ### Windows
 
-#### 方式一：复制到项目（推荐）
+#### 方式一：使用安装脚本（推荐）
 
 ```powershell
-# 克隆仓库
-git clone https://github.com/xs2229308897/pm-workflow-skills.git $env:TEMP\pm-workflow-skills
+# 克隆仓库到固定目录（只需执行一次）
+git clone https://github.com/xs2229308897/pm-workflow-skills.git D:\work\pm-workflow-skills
+
+# 进入你的项目目录
+cd YOUR_PROJECT
+
+# 执行安装脚本
+powershell -File "D:\work\pm-workflow-skills\scripts\install.ps1"
+```
+
+#### 方式二：手动复制
+
+```powershell
+# 克隆仓库（只需执行一次）
+git clone https://github.com/xs2229308897/pm-workflow-skills.git D:\work\pm-workflow-skills
 
 # 复制技能到项目（替换 YOUR_PROJECT 为你的项目路径）
-$skills = Get-ChildItem "$env:TEMP\pm-workflow-skills" -Directory -Filter "pm-*"
+$skills = Get-ChildItem "D:\work\pm-workflow-skills" -Directory -Filter "pm-*"
 foreach ($s in $skills) {
     Copy-Item $s.FullName -Destination "YOUR_PROJECT\.claude\skills\$($s.Name)" -Recurse
 }
 
 # 复制配套模板
 New-Item -ItemType Directory -Force -Path "YOUR_PROJECT\docs\superpowers\pm-output"
-Copy-Item "$env:TEMP\pm-workflow-skills\docs\superpowers\pm-workflow-state.md" -Destination "YOUR_PROJECT\docs\superpowers\"
-Copy-Item "$env:TEMP\pm-workflow-skills\docs\superpowers\pm-lessons-learned.md" -Destination "YOUR_PROJECT\docs\superpowers\"
-```
-
-#### 方式二：使用安装脚本
-
-PowerShell（推荐）：
-
-```powershell
-git clone https://github.com/xs2229308897/pm-workflow-skills.git $env:TEMP\pm-workflow-skills
-cd YOUR_PROJECT
-powershell -File "$env:TEMP\pm-workflow-skills\scripts\install.ps1"
-```
-
-Git Bash（如果已安装 Git for Windows）：
-
-```bash
-git clone https://github.com/xs2229308897/pm-workflow-skills.git /c/Users/$USER/AppData/Local/Temp/pm-workflow-skills
-cd /path/to/your-project
-bash /c/Users/$USER/AppData/Local/Temp/pm-workflow-skills/scripts/install.sh
+Copy-Item "D:\work\pm-workflow-skills\docs\superpowers\pm-workflow-state.md" -Destination "YOUR_PROJECT\docs\superpowers\"
+Copy-Item "D:\work\pm-workflow-skills\docs\superpowers\pm-lessons-learned.md" -Destination "YOUR_PROJECT\docs\superpowers\"
 ```
 
 #### 方式三：符号链接（需管理员权限）
@@ -102,16 +97,15 @@ bash /c/Users/$USER/AppData/Local/Temp/pm-workflow-skills/scripts/install.sh
 以管理员身份打开 CMD：
 
 ```cmd
-:: 替换 YOUR_PROJECT 和 PM_WORKFLOW_SKILLS 为实际路径
 cd YOUR_PROJECT\.claude\skills
-for /d %d in (PM_WORKFLOW_SKILLS\pm-*) do mklink /D "%~nxd" "%d"
+for /d %d in (D:\work\pm-workflow-skills\pm-*) do mklink /D "%~nxd" "%d"
 ```
 
 或在 PowerShell（管理员）中：
 
 ```powershell
 cd YOUR_PROJECT\.claude\skills
-Get-ChildItem "PM_WORKFLOW_SKILLS" -Directory -Filter "pm-*" | ForEach-Object {
+Get-ChildItem "D:\work\pm-workflow-skills" -Directory -Filter "pm-*" | ForEach-Object {
     New-Item -ItemType SymbolicLink -Path $_.Name -Target $_.FullName
 }
 ```
