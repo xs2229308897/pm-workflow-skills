@@ -25,9 +25,11 @@ PM 工作流的唯一入口。用户只需与领导者对话，领导者自动�
    - 读取 `docs/superpowers/pm-lessons-learned.md` — 本地教训（项目特有）
    - 合并为一份完整教训列表，注入后续子 Agent prompt
 5. 向用户展示当前状态，询问下一步操作
-6. **检查可用 MCP 工具**：
-   - 如果当前会话有增强 MCP 工具（web-search、figma、database），在启动信息中告知用户
-   - 如果有 pm-workflow-tools，额外告知可用的自定义工具
+6. **构建 MCP 能力注册表**：
+   - 检测当前会话可用的 MCP 工具（web-search、figma、database、pm-workflow-tools 等）
+   - 构建能力注册表，记录每个工具的名称和可用状态
+   - 在启动信息中告知用户可用的增强工具
+   - 后续构造子 Agent prompt 时，将可用工具列表注入（见"子 Agent 调用方式"章节）
 
 ## Hooks 自动化（可选）
 
@@ -50,16 +52,42 @@ PM 工作流的唯一入口。用户只需与领导者对话，领导者自动�
 
 **执行方式：**
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/xs2229308897/pm-workflow-skills/master/lessons/global-lessons.md \
-  -o .claude/skills/pm-leader/lessons/global-lessons.md
-```
+1. 下载远程版本到临时文件：
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/xs2229308897/pm-workflow-skills/master/lessons/global-lessons.md \
+     -o /tmp/global-lessons-remote.md
+   ```
+2. 与本地版本比较：
+   - 如果本地文件不存在（首次安装）→ 直接使用远程版本
+   - 如果本地与远程相同 → 跳过同步
+   - 如果本地与远程不同 → 进入冲突处理（见下方）
+
+**冲突处理：**
+
+当本地版本与远程版本不同时，检查本地是否有用户手写的内容（不在"（暂无）"占位符中的实质内容）：
+
+- **本地无实质内容**（仅占位符）→ 静默覆盖为远程版本
+- **本地有实质内容** → 提示用户：
+  ```
+  全局教训文件有更新，但你本地也有修改。
+
+  远程新增内容：
+  [列出远程有而本地没有的教训]
+
+  本地独有内容：
+  [列出本地有而远程没有的教训]
+
+  如何处理？
+    1. 使用远程版本（覆盖本地修改）
+    2. 保留本地版本（跳过更新）
+    3. 合并（保留双方内容）
+  ```
+  用户选择后执行对应操作。
 
 **行为说明：**
-- 静默执行，不打扰用户（无需提示）
 - 如果网络不可用，跳过同步，使用本地缓存的版本，不报错
-- 如果本地文件不存在（首次安装），自动创建目录和文件
 - 同步完成后，再执行后续的读取和合并逻辑
+- 临时文件同步完成后自动清理
 
 ## 首次启动检查
 
@@ -177,6 +205,28 @@ curl -fsSL https://raw.githubusercontent.com/xs2229308897/pm-workflow-skills/mas
 - 开启时：pm-leader 构造子 Agent prompt 时，从其 SKILL.md 中提取 `<!-- B-MODE-START -->` 到 `<!-- B-MODE-END -->` 之间的内容，注入 prompt
 - 关闭时：忽略所有 B 端内容，仅使用标准章节
 - pm-process-modeler 和 pm-permission-designer 仅在 B 端模式开启时可被调度
+
+### 检查 7：B-MODE 标记完整性校验（仅 B 端模式开启时）
+
+当 B 端模式开启时，校验所有子 Agent 的 SKILL.md 中 B-MODE 标记是否正确配对：
+
+```bash
+for skill_dir in .claude/skills/pm-*/; do
+  file="$skill_dir/SKILL.md"
+  if [ -f "$file" ]; then
+    start_count=$(grep -c '<!-- B-MODE-START -->' "$file" 2>/dev/null || echo 0)
+    end_count=$(grep -c '<!-- B-MODE-END -->' "$file" 2>/dev/null || echo 0)
+    if [ "$start_count" != "$end_count" ]; then
+      echo "WARNING: $file 中 B-MODE 标记不配对（START: $start_count, END: $end_count）"
+    fi
+  fi
+done
+```
+
+**如果发现不配对：**
+- 向用户报告哪些文件的标记有问题
+- 警告：B-MODE 内容注入可能失败，建议修复后再继续
+- 不阻塞启动（降级为标准模式内容）
 
 ### 检查完成后
 
@@ -339,6 +389,7 @@ curl -fsSL https://raw.githubusercontent.com/xs2229308897/pm-workflow-skills/mas
 | 原型开发 | 技术约束 | → 风险评估 + PRD 生成调整 |
 | 原型开发 | 代码完成 | → 测试验证（独立执行） |
 | 反馈收集 | 新版本需求 | → 需求分析（新一轮迭代） |
+| 反馈收集 | Bug 列表 | → 测试验证生成回归测试用例 |
 | 流程建模 | 需求描述不完整 | → 需求分析深化 |
 | 流程建模 | PRD 逻辑缺失 | → PRD 生成补充 |
 | 流程建模 | 流程定义完成 | → 数据建模 + 权限设计使用 |
@@ -450,12 +501,22 @@ docs/superpowers/pm-output/
 ```
 Agent({
   description: "[子 Agent 名称]",
-  prompt: [从 SKILL.md 中加载的 prompt 模板 + 经验教训],
+  prompt: [从 SKILL.md 中加载的 prompt 模板 + 经验教训 + MCP 能力声明],
   subagent_type: "general-purpose"
 })
 ```
 
 每个子 Agent 获得全新构造的 prompt，绝不继承会话历史。领导者将完整的需求文本传入子 Agent（不让子 Agent 自己读文件）。
+
+**MCP 能力注入：**
+构造 prompt 时，在末尾附加当前可用的 MCP 工具列表，格式如下：
+```
+## 可用 MCP 工具
+- web-search：可用于搜索竞品信息、行业知识
+- figma：可用于获取设计稿规范
+- pm-workflow-tools：可用于需求质量评估、PRD 一致性检查、ER 图生成
+```
+子 Agent 根据此列表决定是否使用 MCP 工具增强，不再自行检测。
 
 **B 端模式 prompt 注入：**
 当 B 端模式开启时，领导者在构造子 Agent prompt 时，从对应 SKILL.md 中提取 `<!-- B-MODE-START -->` 到 `<!-- B-MODE-END -->` 之间的内容，附加到标准 prompt 之后。子 Agent 无需自行判断是否为 B 端模式。
@@ -472,13 +533,16 @@ Agent({
 ### 学习流程
 
 1. 用户指出问题 → 领导者理解问题本质
-2. **判断教训类型**：
+2. **去重检查**：搜索现有教训（全局 + 本地），检查是否已有相同或高度相似的教训
+   - **已存在相似教训** → 更新现有教训（补充新的细节或修正），不新增条目
+   - **无相似教训** → 继续下一步
+3. **判断教训类型**：
    - **通用教训**（适用于所有项目）→ 提示用户：`这条经验适用于所有项目，是否同步到全局教训库？`
      - 用户同意 → 更新 `.claude/skills/pm-leader/lessons/global-lessons.md`，然后**自动提交并推送到共享库 GitHub 仓库**（见下方"全局教训同步流程"）
      - 用户拒绝 → 仅更新本地教训文件
    - **项目特有教训** → 直接更新本地 `docs/superpowers/pm-lessons-learned.md`
-3. 下次调用子 Agent 时，将全局 + 本地教训合并注入 prompt
-4. 经验教训跨会话持久化
+4. 下次调用子 Agent 时，将全局 + 本地教训合并注入 prompt
+5. 经验教训跨会话持久化
 
 ### 全局教训同步流程
 
