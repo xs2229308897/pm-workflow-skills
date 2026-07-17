@@ -1,10 +1,10 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-This is a **Claude Code multi-agent skill library** for product managers. It contains prompt-based agent definitions (SKILL.md files) that orchestrate a PM workflow from requirement analysis through PRD generation, data modeling, prototyping, testing, and feedback iteration. The entry point is `/pm-leader`.
+This is a **Codex multi-agent skill library** for product managers. It contains prompt-based agent definitions (SKILL.md files) that orchestrate a PM workflow from requirement analysis through PRD generation, data modeling, prototyping, testing, and feedback iteration. The entry point is `/pm-leader`.
 
 ## MCP Tool Server
 
@@ -26,7 +26,7 @@ Three tools in `src/tools/`, all pure heuristic (regex + structural detection, n
 
 ## Architecture
 
-**Multi-agent orchestration:** `pm-leader/SKILL.md` is the orchestrator (~700 lines). It dispatches to 10 sub-agents (12 when B-mode is active) via Claude Code's `Agent()` tool. Sub-agents never communicate directly — all routing goes through the leader. Each sub-agent receives a fresh prompt with no session history inheritance.
+**Multi-agent orchestration:** `pm-leader/SKILL.md` is the orchestrator (~700 lines). It dispatches to 10 sub-agents (12 when B-mode is active) via Codex's `Agent()` tool. Sub-agents never communicate directly — all routing goes through the leader. Each sub-agent receives a fresh prompt with no session history inheritance.
 
 **Agent inventory (10 standard + 2 B-mode exclusive):**
 
@@ -88,7 +88,7 @@ When modifying the prototype builder, ensure all four templates stay consistent 
 
 ## Hooks System
 
-Four hook scripts in `scripts/hooks/` (configured via `hooks-config.example.json` → `.claude/settings.json`):
+Four hook scripts in `scripts/hooks/` (configured via `hooks-config.example.json` → `.Codex/settings.json`):
 
 | Hook | Script | Behavior |
 |------|--------|----------|
@@ -97,7 +97,7 @@ Four hook scripts in `scripts/hooks/` (configured via `hooks-config.example.json
 | `Stop` | `save-on-stop.sh` | Writes `pm-session-snapshot.md` with current state |
 | `PreToolUse` (Agent) | `validate-agent-call.sh` | Validates `description` and `prompt` fields exist |
 
-Hook paths in `hooks-config.example.json` point to `.claude/skills/pm-leader/scripts/hooks/` — these are the installed paths in target projects, not the source paths in this repo. When editing hook scripts, update both the source (`scripts/hooks/`) and the example config if paths change.
+Hook paths in `hooks-config.example.json` point to `.Codex/skills/pm-leader/scripts/hooks/` — these are the installed paths in target projects, not the source paths in this repo. When editing hook scripts, update both the source (`scripts/hooks/`) and the example config if paths change.
 
 ## Adding a New Sub-Agent
 
@@ -129,4 +129,4 @@ Examples: `feat(pm): 新增 pm-process-modeler 业务流程建模 Agent`, `fix(p
 
 ## Installation Model
 
-Skills are installed into a target project's `.claude/skills/` directory via copy, symlink, or the install scripts (`scripts/install.sh`, `scripts/install.ps1`). The hooks are optional and configured by merging `hooks-config.example.json` into the target project's `.claude/settings.json`. MCP tools are optional and configured via `mcp-config.example.json`.
+Skills are installed into a target project's `.Codex/skills/` directory via copy, symlink, or the install scripts (`scripts/install.sh`, `scripts/install.ps1`). The hooks are optional and configured by merging `hooks-config.example.json` into the target project's `.Codex/settings.json`. MCP tools are optional and configured via `mcp-config.example.json`.
